@@ -28,6 +28,7 @@ object ImsSettings : Settings {
     val requestNetwork = "key_ims_request_network"
     val createApn = "key_ims_create_apn"
     val forceEnableSettings = "key_ims_force_enable_setting"
+    val enableVolte = "key_ims_enable"
     val installImsApk = "key_ims_install_apn"
 
     fun checkHasPhhSignature(): Boolean {
@@ -114,6 +115,9 @@ class ImsSettingsFragment : SettingsFragment() {
         Log.d("PHH", "MTK AIDL radio = ${Ims.gotMtkAidl}")
         Log.d("PHH", "Qualcomm HIDL radio = ${Ims.gotQcomHidl}")
         Log.d("PHH", "Qualcomm AIDL radio = ${Ims.gotQcomAidl}")
+        Log.d("PHH", "Huawei EMUI8 radio = ${Ims.gotHW8}")
+        Log.d("PHH", "Huawei EMUI9 radio = ${Ims.gotHW9}")
+        Log.d("PHH", "Huawei EMUI10 radio = ${Ims.gotHW10}")
 
         val signSuffix = if(ImsSettings.checkHasPhhSignature()) "-resigned" else ""
 
@@ -130,6 +134,10 @@ class ImsSettingsFragment : SettingsFragment() {
                     Ims.gotQcomHidlMoto -> Pair("https://treble.phh.me/stable/ims-caf-moto$signSuffix.apk", "Qualcomm pre-S vendor (Motorola)")
                     Ims.gotQcomHidl -> Pair("https://treble.phh.me/stable/ims-q.64$signSuffix.apk", "Qualcomm pre-S vendor")
                     Ims.gotQcomAidl -> Pair("https://treble.phh.me/stable/ims-caf-s$signSuffix.apk", "Qualcomm S+ vendor")
+
+                    Ims.gotHW8 -> Pair("https://treble.phh.me/stable/ims-hw-8.apk", "Huawei EMUI8 vendor")
+                    Ims.gotHW9 -> Pair("https://treble.phh.me/stable/ims-hw-9.apk", "Huawei EMUI9 vendor")
+                    Ims.gotHW10 -> Pair("https://treble.phh.me/stable/ims-hw-10.apk", "Huawei EMUI10 vendor")
                     else -> Pair("", "NOT SUPPORTED")
                 }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
-	xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference android:title="Create IMS APN"
         android:key="key_ims_create_apn" />
     <Preference android:title="Download and install IMS APK"
@@ -12,5 +12,9 @@
     <SwitchPreference
         android:defaultValue="false"
         android:key="key_ims_force_enable_setting"
-        android:title="Force the presence of 4G Calling setting" />
+        android:title="Force volte (4G/LTE) and vowifi setting" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="key_ims_enable"
+        android:title="Enable the volte" />
 </PreferenceScreen>

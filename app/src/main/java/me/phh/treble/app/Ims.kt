@@ -3,18 +3,14 @@ package me.phh.treble.app
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.hardware.display.DisplayManager
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.os.Parcel
 import android.os.ServiceManager
 import android.os.SystemProperties
 import android.preference.PreferenceManager
-import android.provider.Settings
 import android.util.Log
-import dalvik.system.PathClassLoader
 import java.lang.ref.WeakReference
 
 @SuppressLint("StaticFieldLeak")
@@ -51,18 +47,34 @@ object Ims: EntryStartup {
                     }
                 }
             }
+            ImsSettings.enableVolte -> {
+                val value = if(sp.getBoolean(key, false)) "1" else "0"
+                Misc.safeSetprop("persist.dbg.ims_volte_enable",value)
+
+                // Pixel volte
+                // Misc.safeSetprop("persist.radio.calls.on.ims",value)
+
+                // Huawei IMS - enable
+                Misc.safeSetprop("ro.hw.volte.enable",value)
+            }
+
             ImsSettings.forceEnableSettings -> {
                 val value = if(sp.getBoolean(key, false)) "1" else "0"
+                // Display voLTE/4G calling options in settings
                 Misc.safeSetprop("persist.dbg.volte_avail_ovr", value)
+                // Display voWifi calling options in settings
                 Misc.safeSetprop("persist.dbg.wfc_avail_ovr", value)
+                // ??
                 Misc.safeSetprop("persist.dbg.allow_ims_off", value)
+                // Display Video calling options in the settings
+                //Misc.safeSetprop("persist.dbg.vt_avail_ovr", value)
             }
         }
     }
 
     val mHidlService = android.hidl.manager.V1_0.IServiceManager.getService()
 
-    val mAllSlots = listOf("imsrild1", "imsrild2", "imsrild3", "slot1", "slot2", "slot3", "imsSlot1", "imsSlot2", "mtkSlot1", "mtkSlot2", "imsradio0", "imsradio1")
+    val mAllSlots = listOf("rildi2", "rildi", "imsrild1", "imsrild2", "imsrild3", "slot1", "slot2", "slot3", "imsSlot1", "imsSlot2", "mtkSlot1", "mtkSlot2", "imsradio0", "imsradio1")
     val gotMtkP = mAllSlots
             .find { i -> mHidlService.get("vendor.mediatek.hardware.radio@3.0::IRadio", i) != null } != null
     val gotMtkQ = mAllSlots
@@ -83,8 +95,12 @@ object Ims: EntryStartup {
             .find { i -> mHidlService.get("vendor.samsung_slsi.telephony.hardware.radio@1.0::IOemSamsungslsi", i) != null } != null
     val gotSPRD = mAllSlots
             .find { i -> mHidlService.get("vendor.sprd.hardware.radio@1.0::IExtRadio", i) != null } != null
-    val gotHW = mAllSlots
+    val gotHW8 = mAllSlots
             .find { i -> mHidlService.get("vendor.huawei.hardware.radio@1.0::IRadio", i) != null } != null
+    val gotHW9 = mAllSlots
+            .find { i -> mHidlService.get("vendor.huawei.hardware.radio.ims@1.0::IRadioIms", i) != null } != null
+    val gotHW10 = mAllSlots
+            .find { i -> mHidlService.get("vendor.huawei.hardware.radio.ims@1.2::IRadioIms", i) != null } != null
 
     override fun startup(ctxt: Context) {
         if (!ImsSettings.enabled()) return
@@ -102,7 +118,7 @@ object Ims: EntryStartup {
             gotQcomHidl || gotQcomAidl -> "me.phh.treble.overlay.cafims_telephony"
             gotSLSI -> "me.phh.treble.overlay.slsiims_telephony"
             gotSPRD -> "me.phh.treble.overlay.sprdims_telephony"
-            gotHW -> "me.phh.treble.overlay.hwims_telephony"
+            gotHW8 || gotHW9  || gotHW10 -> "me.phh.treble.overlay.hwims_telephony"
             else -> null
         }
         if (gotFloss) {
@@ -111,6 +127,7 @@ object Ims: EntryStartup {
             Misc.safeSetprop("persist.sys.phh.ims.floss", "false")
         }
         if(selectOverlay != null) {
+            Log.i("PHH", "Now select overlay : $selectOverlay !")
             allOverlays
                     .filter { it != selectOverlay }
                     .forEach { OverlayPicker.setOverlayEnabled(it, false) }
